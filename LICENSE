@@ -1,0 +1,50 @@
+Snitch CLI License
+Copyright (c) 2026 Snitch Plugin
+
+This software is proprietary and made available for use under the following
+terms.
+
+1. PERMITTED USE
+
+You may install, inspect, and execute this software for the purpose of
+running security scans on source code that you own or are authorized to
+audit. Running scans requires a valid license key obtained from
+https://snitchplugin.com.
+
+2. RESTRICTIONS
+
+You may not:
+  a. Redistribute the software, in source or binary form, in whole or in
+     part.
+  b. Modify the software and distribute the modified version under any name.
+  c. Reverse engineer, decompile, or extract the embedded methodology
+     content for the purpose of bypassing the license-key requirement.
+  d. Use the software to provide a competing security-scanning service
+     to third parties without a separate written agreement with
+     Snitch Plugin.
+  e. Remove or alter any copyright, trademark, or attribution notices.
+
+3. NO WARRANTY
+
+The software is provided "AS IS", without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability,
+fitness for a particular purpose, and non-infringement. In no event shall
+Snitch Plugin be liable for any claim, damages, or other liability arising
+from the use of the software.
+
+4. SECURITY FINDINGS DISCLAIMER
+
+This software uses AI to identify potential security issues. AI output can
+be incomplete, incorrect, or include false positives. The findings are
+advisory only and do not constitute a guarantee of security, compliance,
+certification, or fitness for any regulated standard. Human security
+review remains the responsibility of the operator.
+
+5. TERMINATION
+
+Your right to use the software ends automatically if you violate any of
+these terms. On termination you must cease use and uninstall the software.
+
+6. CONTACT
+
+Questions: eric.waters@snitchplugin.com
