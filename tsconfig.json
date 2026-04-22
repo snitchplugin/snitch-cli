@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": false,
+    "sourceMap": true,
+    "lib": ["ES2022"]
+  },
+  "include": ["src/**/*.ts", "../snitch-github/src/providers/**/*.ts", "../snitch-github/src/methodology.ts", "../snitch-github/src/license.ts", "../snitch-github/src/sarif.ts", "../snitch-github/src/config.ts"],
+  "exclude": ["node_modules", "dist", "bin", "tests"]
+}

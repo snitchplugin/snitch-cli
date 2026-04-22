@@ -1,50 +1,33 @@
-Snitch CLI License
-Copyright (c) 2026 Snitch Plugin
+Business Source License 1.1
 
-This software is proprietary and made available for use under the following
-terms.
+Parameters:
 
-1. PERMITTED USE
+Licensor:              Snitch Plugin
+Licensed Work:         Snitch CLI (https://www.npmjs.com/package/@snitchplugin/cli)
+                       Copyright (c) 2026 Snitch Plugin
+Additional Use Grant:  You may use the Licensed Work for evaluation, for
+                       personal projects, and for security audits of code
+                       you own. Use of the Licensed Work to operate a
+                       service that competes with Snitch, or to scan code
+                       on behalf of a separate organization for a fee,
+                       requires a current Snitch subscription from
+                       https://snitchplugin.com.
+Change Date:           2030-04-22
+Change License:        Apache License, Version 2.0
 
-You may install, inspect, and execute this software for the purpose of
-running security scans on source code that you own or are authorized to
-audit. Running scans requires a valid license key obtained from
-https://snitchplugin.com.
+The full Business Source License 1.1 text is available at:
 
-2. RESTRICTIONS
+  https://mariadb.com/bsl11
 
-You may not:
-  a. Redistribute the software, in source or binary form, in whole or in
-     part.
-  b. Modify the software and distribute the modified version under any name.
-  c. Reverse engineer, decompile, or extract the embedded methodology
-     content for the purpose of bypassing the license-key requirement.
-  d. Use the software to provide a competing security-scanning service
-     to third parties without a separate written agreement with
-     Snitch Plugin.
-  e. Remove or alter any copyright, trademark, or attribution notices.
+Notice:
 
-3. NO WARRANTY
+The Business Source License (this document, or the "License") is not an
+Open Source license. However, the Licensed Work will eventually be made
+available under an Open Source License, as stated in this License.
 
-The software is provided "AS IS", without warranty of any kind, express or
-implied, including but not limited to the warranties of merchantability,
-fitness for a particular purpose, and non-infringement. In no event shall
-Snitch Plugin be liable for any claim, damages, or other liability arising
-from the use of the software.
+For information about alternative licensing arrangements for the Licensed
+Work, please contact eric.waters@snitchplugin.com.
 
-4. SECURITY FINDINGS DISCLAIMER
-
-This software uses AI to identify potential security issues. AI output can
-be incomplete, incorrect, or include false positives. The findings are
-advisory only and do not constitute a guarantee of security, compliance,
-certification, or fitness for any regulated standard. Human security
+Findings produced by the Licensed Work are AI-generated and advisory.
+They do not constitute a guarantee of security or compliance. Human
 review remains the responsibility of the operator.
-
-5. TERMINATION
-
-Your right to use the software ends automatically if you violate any of
-these terms. On termination you must cease use and uninstall the software.
-
-6. CONTACT
-
-Questions: eric.waters@snitchplugin.com

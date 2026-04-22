@@ -1,6 +1,6 @@
 {
   "name": "@snitchplugin/cli",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Local AI security scanner. Runs on your laptop with your own Claude Code, Codex, Gemini, or OpenRouter key. Source never leaves your machine. 68 categories, SARIF output, CI-ready.",
   "homepage": "https://snitchplugin.com/cli",
   "repository": {
@@ -75,5 +75,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "SEE LICENSE IN LICENSE"
+  "license": "BUSL-1.1"
 }
