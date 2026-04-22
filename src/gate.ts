@@ -1,13 +1,13 @@
 import {
   fetchMethodology,
   flattenMethodology,
-} from "../../snitch-github/src/methodology.js";
+} from "./_shared/methodology.js";
 import type {
   AnalyzeArgs,
   AnalyzeResult,
   Finding,
   Severity,
-} from "../../snitch-github/src/providers/types.js";
+} from "./_shared/providers/types.js";
 import { listAllTrackedPaths, loadFiles } from "./git.js";
 
 const PI_CATEGORY_ID = 68; // skills/snitch/categories/68-agent-prompt-injection.md

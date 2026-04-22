@@ -1,25 +1,25 @@
-import { loadConfig, mergeWithDefaults } from "../../snitch-github/src/config.js";
+import { loadConfig, mergeWithDefaults } from "./_shared/config.js";
 import {
   completeScanEvent,
   LicenseError,
   startScanEvent,
-} from "../../snitch-github/src/license.js";
+} from "./_shared/license.js";
 import {
   fetchMethodology,
   flattenMethodology,
-} from "../../snitch-github/src/methodology.js";
+} from "./_shared/methodology.js";
 import {
   selectProvider,
   type ProviderKeys,
-} from "../../snitch-github/src/providers/index.js";
-import { findingsToSarif } from "../../snitch-github/src/sarif.js";
-import { filterPaths } from "../../snitch-github/src/trigger.js";
+} from "./_shared/providers/index.js";
+import { findingsToSarif } from "./_shared/sarif.js";
+import { filterPaths } from "./_shared/trigger.js";
 import type {
   AnalyzeArgs,
   AnalyzeResult,
   Finding,
   Severity,
-} from "../../snitch-github/src/providers/types.js";
+} from "./_shared/providers/types.js";
 import { localCli } from "./providers/local-cli.js";
 
 // A loose adapter shape that accepts both the hosted providers and local-cli.

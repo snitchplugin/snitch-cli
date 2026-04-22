@@ -5,10 +5,10 @@ import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { formatBlockMessage, runGate } from "../src/gate.js";
-import type { AnalyzeArgs, AnalyzeResult, Finding } from "../../snitch-github/src/providers/types.js";
+import type { AnalyzeArgs, AnalyzeResult, Finding } from "../src/_shared/providers/types.js";
 
 // Mock the methodology fetch so the gate can run without hitting the network.
-vi.mock("../../snitch-github/src/methodology.js", () => ({
+vi.mock("../src/_shared/methodology.js", () => ({
   fetchMethodology: vi.fn(async () => ({
     version: "v7.1.0",
     skill: "test skill",

@@ -4,9 +4,9 @@ import type {
   AnalyzeArgs,
   AnalyzeResult,
   Finding,
-} from "../../snitch-github/src/providers/types.js";
-import type { MethodologyBundle } from "../../snitch-github/src/methodology.js";
-import { flattenMethodology } from "../../snitch-github/src/methodology.js";
+} from "./_shared/providers/types.js";
+import type { MethodologyBundle } from "./_shared/methodology.js";
+import { flattenMethodology } from "./_shared/methodology.js";
 import { runSubprocess } from "./providers/local-cli.js";
 
 // ─── Shape ──────────────────────────────────────────────────────────

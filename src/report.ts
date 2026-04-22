@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import * as path from "node:path";
-import type { Finding, Severity } from "../../snitch-github/src/providers/types.js";
+import type { Finding, Severity } from "./_shared/providers/types.js";
 
 const HEADER = "# Snitch Security Scan";
 

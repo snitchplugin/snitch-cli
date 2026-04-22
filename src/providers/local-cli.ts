@@ -1,9 +1,9 @@
 import { spawn, type SpawnOptions } from "node:child_process";
-import { buildPrompt, parseResponse } from "../../../snitch-github/src/providers/_shared.js";
+import { buildPrompt, parseResponse } from "../_shared/providers/_shared.js";
 import type {
   AnalyzeArgs,
   AnalyzeResult,
-} from "../../../snitch-github/src/providers/types.js";
+} from "../_shared/providers/types.js";
 
 // local-cli lives outside the shared ProviderName enum. It is CLI-specific
 // (the Action can't shell out to a local binary on a GitHub runner), so it

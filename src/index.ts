@@ -1,6 +1,6 @@
 import { ArgError, HELP_TEXT, parseArgs } from "./args.js";
 import { runScan } from "./scan.js";
-import { LicenseError } from "../../snitch-github/src/license.js";
+import { LicenseError } from "./_shared/license.js";
 import { runSetup, SetupAbort } from "./setup.js";
 import {
   configPath,
@@ -12,7 +12,7 @@ import {
 } from "./config-store.js";
 import { validateLicense } from "./validate.js";
 
-const VERSION = "1.1.4";
+const VERSION = "1.1.5";
 
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
