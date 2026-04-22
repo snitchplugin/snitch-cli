@@ -1,11 +1,11 @@
 {
   "name": "@snitchplugin/cli",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Local AI security scanner. Runs on your laptop with your own Claude Code, Codex, Gemini, or OpenRouter key. Source never leaves your machine. 68 categories, SARIF output, CI-ready.",
   "homepage": "https://snitchplugin.com/cli",
   "repository": {
     "type": "git",
-    "url": "https://github.com/snitchplugin/homebrew-tap.git"
+    "url": "https://github.com/snitchplugin/snitch-cli.git"
   },
   "bugs": {
     "url": "mailto:eric.waters@snitchplugin.com"
