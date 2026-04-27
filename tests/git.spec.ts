@@ -90,6 +90,18 @@ describe("git helpers (fixture repo)", () => {
     expect(files.map((f) => f.path)).toEqual(["src/a.ts"]);
   });
 
+  it("loadFiles tolerates mixed path separators in the root (Windows regression)", () => {
+    // Regression: git rev-parse --show-toplevel returns forward slashes on
+    // Windows (C:/Users/foo/repo) while path.resolve returns backslashes
+    // (C:\Users\foo\repo). A naive startsWith containment check dropped
+    // every file. Pass a forward-slash-styled root and confirm loadFiles
+    // still resolves the files.
+    const forwardSlashRoot = tmp.split(path.sep).join("/");
+    const files = loadFiles(["src/a.ts"], null, forwardSlashRoot);
+    expect(files).toHaveLength(1);
+    expect(files[0]!.path).toBe("src/a.ts");
+  });
+
   it("headSha returns a short sha", () => {
     const sha = headSha(tmp);
     expect(sha).toMatch(/^[0-9a-f]{12}$/);

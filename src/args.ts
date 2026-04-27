@@ -15,6 +15,7 @@ export interface ParsedArgs {
   // category ID from the methodology (1-68). Overrides .snitch.yml categories.
   categories?: number[];
   quick?: boolean; // scan only the 10 core categories
+  skipSca?: boolean; // skip dependency-vulnerability scan
   // auth subcommand
   authKey?: string;
   authOpenrouterKey?: string;
@@ -178,6 +179,10 @@ export function parseArgs(argv: string[]): ParsedArgs {
         parsed.forceAfterInjection = true;
         i += 1;
         break;
+      case "--skip-sca":
+        parsed.skipSca = true;
+        i += 1;
+        break;
       case "--category":
       case "--categories":
       case "-c": {
@@ -338,6 +343,13 @@ Category scope (default is whatever your plan entitles):
   --categories <a,b,c>  Comma-separated subset of the 68 category IDs.
                         Free plans already run the core 10 only; this is
                         mainly for Pro/Team users who want a focused pass.
+
+Dependency scanning (SCA):
+  --skip-sca            Skip dependency vulnerability scanning. By default
+                        Snitch parses package-lock.json / requirements.txt /
+                        Cargo.lock / Gemfile.lock / go.sum / pom.xml /
+                        composer.lock / packages.lock.json and queries
+                        OSV.dev for known CVEs alongside the AI scan.
 
 Quick target shortcuts (positional, no flag needed):
   snitch scan @src/auth.ts            # scan one file

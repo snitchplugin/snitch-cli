@@ -1,7 +1,7 @@
 {
   "name": "@snitchplugin/cli",
-  "version": "1.1.5",
-  "description": "Local AI security scanner. Runs on your laptop with your own Claude Code, Codex, Gemini, or OpenRouter key. Source never leaves your machine. 68 categories, SARIF output, CI-ready.",
+  "version": "1.2.0",
+  "description": "Local AI security scanner. Runs on your laptop with your own Claude Code, Codex, Gemini, or OpenRouter key. Source never leaves your machine. 69 categories including SCA dependency-vulnerability scanning via OSV.dev, SARIF output, CI-ready.",
   "homepage": "https://snitchplugin.com/cli",
   "repository": {
     "type": "git",
@@ -37,7 +37,7 @@
     "@vercel/ncc": "^0.38.1",
     "@yao-pkg/pkg": "^5.16.1",
     "ai": "^4.0.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "minimatch": "^10.0.1",
     "typescript": "^5.4.5",
     "vitest": "^2.0.5",
@@ -75,5 +75,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "BUSL-1.1"
+  "license": "BUSL-1.1",
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "@yarnpkg/parsers": "^3.0.3",
+    "fast-xml-parser": "^5.7.2"
+  }
 }

@@ -9,10 +9,10 @@ export interface LicenseValidation {
 }
 
 /**
- * Hit /api/github/billing with the pasted license key. If it responds 200,
- * the key is good. If 401, the key is invalid. Any other status is treated
- * as "inconclusive" — we still accept the key so setup can continue when
- * snitchplugin.com is intermittently unreachable.
+ * Validate a pasted license key against the Snitch API. 200 = good,
+ * 401/403 = rejected, anything else is treated as "inconclusive" so
+ * setup can continue when snitchplugin.com is intermittently unreachable
+ * (the first scan will surface the real error if the key is bad).
  */
 export async function validateLicense(key: string): Promise<LicenseValidation> {
   const url = `${SNITCH_BASE}/api/github/billing`;

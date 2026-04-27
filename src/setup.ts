@@ -79,7 +79,10 @@ export class SetupAbort extends Error {
 export async function runSetup(): Promise<StoredConfig> {
   if (!isTty()) {
     throw new SetupAbort(
-      "Snitch is not configured and this is not an interactive terminal. Run `snitch init` on your laptop first, or export SNITCH_LICENSE_KEY + provider key env vars."
+      "Snitch is not configured and this is not an interactive terminal.\n" +
+        "  • If you have a license key: export SNITCH_LICENSE_KEY=snch_... (and any provider key) before running.\n" +
+        "  • If you don't have one yet: sign-ups are currently paused. Join the waitlist at https://snitchplugin.com.\n" +
+        "  • On your laptop, you can also run `snitch init` interactively."
     );
   }
 
@@ -88,6 +91,10 @@ export async function runSetup(): Promise<StoredConfig> {
   try {
     stdout.write("\n");
     stdout.write("Welcome to Snitch. Let's set up.\n");
+    stdout.write("\n");
+    stdout.write("Don't have a license key yet?\n");
+    stdout.write("  → Existing customers: grab yours at https://snitchplugin.com/login\n");
+    stdout.write("  → New: sign-ups are paused. Join the waitlist at https://snitchplugin.com\n");
     stdout.write("\n");
 
     // 1) License key

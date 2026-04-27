@@ -1,9 +1,12 @@
 const SNITCH_BASE = process.env.SNITCH_API_BASE ?? "https://snitchplugin.com";
 
 export interface ScanEventRequest {
-  repoOwner: string;
-  repoName: string;
-  prNumber: number;
+  // Repository identity (owner / name / pr number) is intentionally not
+  // sent. Server stores empty placeholders. Callers may still pass these
+  // fields for backwards compat — they are ignored before the network call.
+  repoOwner?: string;
+  repoName?: string;
+  prNumber?: number;
   fileCount: number;
   scanMode: "smart" | "always" | "manual" | "local" | "gate";
   provider: string;
@@ -62,9 +65,8 @@ export async function startScanEvent(
       Authorization: `Bearer ${licenseKey}`,
     },
     body: JSON.stringify({
-      repo_owner: body.repoOwner,
-      repo_name: body.repoName,
-      pr_number: body.prNumber,
+      // repo_owner / repo_name / pr_number intentionally omitted —
+      // the server no longer collects this data.
       file_count: body.fileCount,
       scan_mode: body.scanMode,
       provider: body.provider,

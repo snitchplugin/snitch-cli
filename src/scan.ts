@@ -44,6 +44,7 @@ import {
   repoRoot,
   resolveBaseRef,
 } from "./git.js";
+import { runScaScan } from "./_shared/sca/scan.js";
 import { reportPaths, writeMarkdown, writeSarif } from "./report.js";
 import { formatBlockMessage, runGate } from "./gate.js";
 import {
@@ -193,6 +194,7 @@ export interface ScanOptions {
   categories?: number[]; // subset of 1-68 methodology category IDs
   quick?: boolean; // shorthand for the 10 core categories
   forceAfterInjection?: boolean;
+  skipSca?: boolean; // skip SCA dependency-vulnerability scan
 }
 
 export interface ScanOutcome {
@@ -474,6 +476,40 @@ export async function runScan(opts: ScanOptions): Promise<ScanOutcome> {
   let totalOutputTokens = 0;
   let orchestratorUsed = false;
 
+  // SCA pass — deterministic, runs before AI batches. Discovers manifests
+  // (package-lock.json, requirements.txt, etc.) in the loaded files,
+  // queries OSV.dev for CVEs, and merges findings into allFindings so the
+  // markdown report + SARIF + sticky comment all pick them up. Disable
+  // with SNITCH_SKIP_SCA=1 (CLI flag --skip-sca routes here).
+  const skipSca =
+    process.env.SNITCH_SKIP_SCA === "1" || opts.skipSca === true;
+  if (!skipSca) {
+    const scaStart = Date.now();
+    try {
+      const scaResult = await runScaScan({
+        files: files.map((f) => ({ path: f.path, content: f.content })),
+        osvOptions: {
+          onError: (msg) => {
+            if (!opts.quiet) console.warn(`  [sca] ${msg}`);
+          },
+        },
+      });
+      if (scaResult.deps.length > 0 && !opts.quiet) {
+        const manifestCount = new Set(scaResult.deps.map((d) => d.manifestPath)).size;
+        console.log(
+          `  Dependencies: ${scaResult.deps.length} across ${manifestCount} manifest(s); ${scaResult.findings.length} vulnerable in ${((Date.now() - scaStart) / 1000).toFixed(1)}s.`
+        );
+      }
+      allFindings.push(...scaResult.findings);
+    } catch (err) {
+      if (!opts.quiet) {
+        console.warn(
+          `  SCA skipped: ${err instanceof Error ? err.message : String(err)}. AI scan will still run.`
+        );
+      }
+    }
+  }
+
   if (shouldUseOrchestrator({ fileCount: files.length, userPickedCategories })) {
     const reconFiles = collectReconFiles(root);
     if (!opts.quiet) {
@@ -519,15 +555,27 @@ export async function runScan(opts: ScanOptions): Promise<ScanOutcome> {
 
   // Fallback + default path: batched sequential scan.
   if (!orchestratorUsed) {
-    const totalBatches = Math.ceil(files.length / batchSize);
-    if (!opts.quiet && files.length > 0) {
+    // Filter manifests out before AI batches; SCA already analyzed them
+    // and shoving a 50KB lockfile into the model's context wastes tokens.
+    const manifestSet = new Set([
+      "package-lock.json", "yarn.lock", "pnpm-lock.yaml",
+      "requirements.txt", "poetry.lock", "Pipfile.lock", "uv.lock",
+      "Cargo.lock", "go.sum", "go.mod", "Gemfile.lock",
+      "composer.lock", "packages.lock.json", "gradle.lockfile", "pom.xml",
+    ]);
+    const aiFiles = files.filter((f) => {
+      const base = f.path.includes("/") ? f.path.slice(f.path.lastIndexOf("/") + 1) : f.path;
+      return !manifestSet.has(base);
+    });
+    const totalBatches = Math.ceil(aiFiles.length / batchSize);
+    if (!opts.quiet && aiFiles.length > 0) {
       console.log(
         `  Batched sequential scan: ${totalBatches} batch${totalBatches === 1 ? "" : "es"} of ${batchSize}...`
       );
     }
     const accum: Finding[] = [];
-    for (let i = 0; i < files.length; i += batchSize) {
-      const batch = files.slice(i, i + batchSize);
+    for (let i = 0; i < aiFiles.length; i += batchSize) {
+      const batch = aiFiles.slice(i, i + batchSize);
       const batchNum = Math.floor(i / batchSize) + 1;
       if (!opts.quiet) {
         console.log(

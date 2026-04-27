@@ -12,7 +12,7 @@ import {
 } from "./config-store.js";
 import { validateLicense } from "./validate.js";
 
-const VERSION = "1.1.5";
+const VERSION = "1.1.9";
 
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
@@ -98,6 +98,9 @@ async function main(): Promise<void> {
       console.error(`License: ${err.message}`);
       if (err.upgradeUrl) {
         console.error(`Upgrade: ${err.upgradeUrl}`);
+      } else {
+        console.error("→ Existing customers: https://snitchplugin.com/login");
+        console.error("→ New: sign-ups are paused, join the waitlist at https://snitchplugin.com");
       }
       process.exit(1);
     }
