@@ -45,6 +45,13 @@ export type FindingMetadata =
       ecosystem?: string;
       packageName?: string;
       manifestPath?: string;
+    }
+  | {
+      kind: "iac";
+      framework: "terraform" | "cloudformation" | "kubernetes" | "dockerfile";
+      ruleId: string;
+      resourceType: string;
+      resourceName?: string;
     };
 
 export interface AnalyzeArgs {

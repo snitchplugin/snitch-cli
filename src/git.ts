@@ -17,10 +17,14 @@ const SCA_MANIFEST_FILENAMES = new Set([
   "package.json", "pyproject.toml", "Cargo.toml", "composer.json", "Gemfile",
 ]);
 
+const DOCKERFILE_VARIANT_RE = /^Dockerfile(\.[\w.-]+)?$|\.dockerfile$/i;
+
 function isScannablePath(p: string): boolean {
   if (SCANNABLE_EXT.test(p)) return true;
   const base = p.includes("/") ? p.slice(p.lastIndexOf("/") + 1) : p;
-  return SCA_MANIFEST_FILENAMES.has(base);
+  if (SCA_MANIFEST_FILENAMES.has(base)) return true;
+  if (DOCKERFILE_VARIANT_RE.test(base)) return true;
+  return false;
 }
 
 const MAX_BYTES = 200_000;

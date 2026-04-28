@@ -17,6 +17,7 @@ export interface ParsedArgs {
   quick?: boolean; // scan only the 10 core categories
   skipSca?: boolean; // skip dependency-vulnerability scan
   skipDca?: boolean; // skip dead-code + unused-deps scan
+  skipIac?: boolean; // skip IaC misconfiguration scan
   // auth subcommand
   authKey?: string;
   authOpenrouterKey?: string;
@@ -186,6 +187,10 @@ export function parseArgs(argv: string[]): ParsedArgs {
         break;
       case "--skip-dca":
         parsed.skipDca = true;
+        i += 1;
+        break;
+      case "--skip-iac":
+        parsed.skipIac = true;
         i += 1;
         break;
       case "--category":

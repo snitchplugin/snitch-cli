@@ -41,6 +41,7 @@ export function buildReportMarkdown(
   const counts = countBy(findings, (f) => f.severity);
   const sca = findings.filter((f) => f.metadata?.kind === "sca");
   const dca = findings.filter((f) => f.metadata?.kind === "dca");
+  const iac = findings.filter((f) => f.metadata?.kind === "iac");
   const code = findings.filter((f) => !f.metadata);
 
   const out: string[] = [];
@@ -81,6 +82,11 @@ export function buildReportMarkdown(
   // ── DCA section: unused deps + dead files ──────────────────────
   if (dca.length > 0) {
     out.push(renderDcaSection(dca));
+  }
+
+  // ── IaC section: misconfigurations grouped by framework ────────
+  if (iac.length > 0) {
+    out.push(renderIacSection(iac));
   }
 
   // ── Code-review section: severity-bucketed bullets ─────────────
@@ -255,6 +261,65 @@ function renderCodeSection(codeFindings: Finding[]): string {
     }
     lines.push("", "</details>", "");
   }
+  return lines.join("\n");
+}
+
+function renderIacSection(iacFindings: Finding[]): string {
+  const lines: string[] = [];
+  lines.push(
+    `### 🏗️ Infrastructure misconfigurations (${iacFindings.length})`,
+    "",
+    "_Static policy checks on Terraform, CloudFormation, Kubernetes, and Dockerfiles. Caught before merge so the runtime never has the chance to be exploited._",
+    ""
+  );
+
+  // Group by framework
+  const byFramework = new Map<string, Finding[]>();
+  for (const f of iacFindings) {
+    const meta = f.metadata as Extract<FindingMetadata, { kind: "iac" }>;
+    const fw = meta.framework;
+    const arr = byFramework.get(fw);
+    if (arr) arr.push(f);
+    else byFramework.set(fw, [f]);
+  }
+
+  // Top-line summary table.
+  lines.push("| Framework | Misconfigs | Worst |");
+  lines.push("|---|---:|---|");
+  const fwOrder = [...byFramework.keys()].sort();
+  for (const fw of fwOrder) {
+    const items = byFramework.get(fw)!;
+    lines.push(`| \`${fw}\` | ${items.length} | ${SEV_BADGE[worstSeverity(items)]} |`);
+  }
+  lines.push("");
+
+  // Per-framework collapsible.
+  for (const fw of fwOrder) {
+    const items = byFramework.get(fw)!;
+    const worst = worstSeverity(items);
+    const open = items.length <= 12 ? " open" : "";
+    lines.push(
+      `<details${open}><summary><strong>${escapeHtml(fw)}</strong> · ${items.length} misconfig${items.length === 1 ? "" : "s"} · ${SEV_BADGE[worst]}</summary>`,
+      "",
+      "| Severity | Rule | Resource | File:line | Fix |",
+      "|---|---|---|---|---|"
+    );
+    const sorted = [...items].sort(
+      (a, b) => SEV_ORDER.indexOf(a.severity) - SEV_ORDER.indexOf(b.severity)
+    );
+    for (const f of sorted) {
+      const meta = f.metadata as Extract<FindingMetadata, { kind: "iac" }>;
+      const loc = f.line ? `${f.file}:${f.line}` : f.file;
+      const resource = meta.resourceName
+        ? `${meta.resourceType} \`${meta.resourceName}\``
+        : meta.resourceType;
+      lines.push(
+        `| ${SEV_BADGE[f.severity]} | \`${meta.ruleId}\` | ${escapeMd(resource)} | \`${loc}\` | ${escapeMd(f.fix)} |`
+      );
+    }
+    lines.push("", "</details>", "");
+  }
+
   return lines.join("\n");
 }
 

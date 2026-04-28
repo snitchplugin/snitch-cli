@@ -46,6 +46,7 @@ import {
 } from "./git.js";
 import { runScaScan } from "./_shared/sca/scan.js";
 import { runDcaScan } from "./_shared/dca/scan.js";
+import { runIacScan } from "./_shared/iac/scan.js";
 import { reportPaths, writeMarkdown, writeSarif } from "./report.js";
 import { formatBlockMessage, runGate } from "./gate.js";
 import {
@@ -197,6 +198,7 @@ export interface ScanOptions {
   forceAfterInjection?: boolean;
   skipSca?: boolean; // skip SCA dependency-vulnerability scan
   skipDca?: boolean; // skip DCA dead-code + unused-deps scan
+  skipIac?: boolean; // skip IaC misconfiguration scan
 }
 
 export interface ScanOutcome {
@@ -348,6 +350,18 @@ export async function runScan(opts: ScanOptions): Promise<ScanOutcome> {
     selected = selectProvider(keys, provider);
   }
   const adapterModel = model ?? selected.adapter.defaultModel;
+
+  // Install runtime egress allowlist before any subsequent fetch. Same
+  // structural defense against poisoned-transitive-dep exfiltration as
+  // the GitHub Action; see _shared/egress.ts for the full rationale.
+  const { installEgressAllowlist } = await import("./_shared/egress.js");
+  installEgressAllowlist({
+    provider: selected.adapter.name,
+    extraHosts: process.env.SNITCH_API_BASE ? [process.env.SNITCH_API_BASE] : [],
+    onBlocked: (msg) => {
+      if (!opts.quiet) console.error(msg);
+    },
+  });
 
   // Prompt-injection gate. Runs only when we cloned a remote URL, since the
   // threat model is "adversarial repo hijacks the scanner." Local scans and
@@ -535,6 +549,29 @@ export async function runScan(opts: ScanOptions): Promise<ScanOutcome> {
     }
   }
 
+  // IaC pass — Terraform / CFN / K8s / Dockerfile static policy checks.
+  const skipIac = process.env.SNITCH_SKIP_IAC === "1" || opts.skipIac === true;
+  if (!skipIac) {
+    const iacStart = Date.now();
+    try {
+      const iacResult = await runIacScan({
+        files: files.map((f) => ({ path: f.path, content: f.content })),
+      });
+      if (iacResult.findings.length > 0 && !opts.quiet) {
+        console.log(
+          `  IaC: ${iacResult.findings.length} misconfig(s) across ${iacResult.resourcesScanned} resource(s) in ${((Date.now() - iacStart) / 1000).toFixed(1)}s.`
+        );
+      }
+      allFindings.push(...iacResult.findings);
+    } catch (err) {
+      if (!opts.quiet) {
+        console.warn(
+          `  IaC skipped: ${err instanceof Error ? err.message : String(err)}. AI scan will still run.`
+        );
+      }
+    }
+  }
+
   if (shouldUseOrchestrator({ fileCount: files.length, userPickedCategories })) {
     const reconFiles = collectReconFiles(root);
     if (!opts.quiet) {
@@ -589,9 +626,13 @@ export async function runScan(opts: ScanOptions): Promise<ScanOutcome> {
       "composer.lock", "packages.lock.json", "gradle.lockfile", "pom.xml",
       "package.json", "pyproject.toml", "Cargo.toml", "composer.json", "Gemfile",
     ]);
+    const DOCKERFILE_RE = /^Dockerfile(\.[\w.-]+)?$|\.dockerfile$/i;
     const aiFiles = files.filter((f) => {
       const base = f.path.includes("/") ? f.path.slice(f.path.lastIndexOf("/") + 1) : f.path;
-      return !manifestSet.has(base);
+      if (manifestSet.has(base)) return false;
+      if (DOCKERFILE_RE.test(base)) return false;
+      if (base.endsWith(".tf") || base.endsWith(".hcl")) return false;
+      return true;
     });
     const totalBatches = Math.ceil(aiFiles.length / batchSize);
     if (!opts.quiet && aiFiles.length > 0) {
