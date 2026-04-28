@@ -16,6 +16,7 @@ export interface ParsedArgs {
   categories?: number[];
   quick?: boolean; // scan only the 10 core categories
   skipSca?: boolean; // skip dependency-vulnerability scan
+  skipDca?: boolean; // skip dead-code + unused-deps scan
   // auth subcommand
   authKey?: string;
   authOpenrouterKey?: string;
@@ -181,6 +182,10 @@ export function parseArgs(argv: string[]): ParsedArgs {
         break;
       case "--skip-sca":
         parsed.skipSca = true;
+        i += 1;
+        break;
+      case "--skip-dca":
+        parsed.skipDca = true;
         i += 1;
         break;
       case "--category":
@@ -350,6 +355,13 @@ Dependency scanning (SCA):
                         Cargo.lock / Gemfile.lock / go.sum / pom.xml /
                         composer.lock / packages.lock.json and queries
                         OSV.dev for known CVEs alongside the AI scan.
+
+Dead-code + unused dependencies (DCA):
+  --skip-dca            Skip dead-code analysis. By default Snitch flags
+                        packages declared in your manifests but never
+                        imported, and source files (JS/TS + Python) that
+                        no other file imports — useful cleanup signal
+                        that also reduces supply-chain attack surface.
 
 Quick target shortcuts (positional, no flag needed):
   snitch scan @src/auth.ts            # scan one file

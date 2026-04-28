@@ -45,6 +45,7 @@ import {
   resolveBaseRef,
 } from "./git.js";
 import { runScaScan } from "./_shared/sca/scan.js";
+import { runDcaScan } from "./_shared/dca/scan.js";
 import { reportPaths, writeMarkdown, writeSarif } from "./report.js";
 import { formatBlockMessage, runGate } from "./gate.js";
 import {
@@ -195,6 +196,7 @@ export interface ScanOptions {
   quick?: boolean; // shorthand for the 10 core categories
   forceAfterInjection?: boolean;
   skipSca?: boolean; // skip SCA dependency-vulnerability scan
+  skipDca?: boolean; // skip DCA dead-code + unused-deps scan
 }
 
 export interface ScanOutcome {
@@ -510,6 +512,29 @@ export async function runScan(opts: ScanOptions): Promise<ScanOutcome> {
     }
   }
 
+  // DCA pass — dead code + unused dependencies. Same on/off pattern as SCA.
+  const skipDca = process.env.SNITCH_SKIP_DCA === "1" || opts.skipDca === true;
+  if (!skipDca) {
+    const dcaStart = Date.now();
+    try {
+      const dcaResult = await runDcaScan({
+        files: files.map((f) => ({ path: f.path, content: f.content })),
+      });
+      if (dcaResult.findings.length > 0 && !opts.quiet) {
+        console.log(
+          `  Dead-code: ${dcaResult.unusedDeps} unused deps, ${dcaResult.deadFiles} dead file(s) in ${((Date.now() - dcaStart) / 1000).toFixed(1)}s.`
+        );
+      }
+      allFindings.push(...dcaResult.findings);
+    } catch (err) {
+      if (!opts.quiet) {
+        console.warn(
+          `  DCA skipped: ${err instanceof Error ? err.message : String(err)}. AI scan will still run.`
+        );
+      }
+    }
+  }
+
   if (shouldUseOrchestrator({ fileCount: files.length, userPickedCategories })) {
     const reconFiles = collectReconFiles(root);
     if (!opts.quiet) {
@@ -562,6 +587,7 @@ export async function runScan(opts: ScanOptions): Promise<ScanOutcome> {
       "requirements.txt", "poetry.lock", "Pipfile.lock", "uv.lock",
       "Cargo.lock", "go.sum", "go.mod", "Gemfile.lock",
       "composer.lock", "packages.lock.json", "gradle.lockfile", "pom.xml",
+      "package.json", "pyproject.toml", "Cargo.toml", "composer.json", "Gemfile",
     ]);
     const aiFiles = files.filter((f) => {
       const base = f.path.includes("/") ? f.path.slice(f.path.lastIndexOf("/") + 1) : f.path;

@@ -11,6 +11,7 @@
 // findings (no metadata) keep the existing severity-bucketed layout.
 
 import type { Finding, FindingMetadata, Severity } from "./providers/types.js";
+// FindingMetadata referenced via Extract<> in renderer helpers below.
 
 export interface ReportMeta {
   fileCount: number;
@@ -39,6 +40,7 @@ export function buildReportMarkdown(
   const total = findings.length;
   const counts = countBy(findings, (f) => f.severity);
   const sca = findings.filter((f) => f.metadata?.kind === "sca");
+  const dca = findings.filter((f) => f.metadata?.kind === "dca");
   const code = findings.filter((f) => !f.metadata);
 
   const out: string[] = [];
@@ -76,12 +78,91 @@ export function buildReportMarkdown(
     out.push(renderScaSection(sca));
   }
 
+  // ── DCA section: unused deps + dead files ──────────────────────
+  if (dca.length > 0) {
+    out.push(renderDcaSection(dca));
+  }
+
   // ── Code-review section: severity-bucketed bullets ─────────────
   if (code.length > 0) {
     out.push(renderCodeSection(code));
   }
 
   return out.join("\n").trimEnd() + "\n";
+}
+
+function renderDcaSection(dcaFindings: Finding[]): string {
+  const lines: string[] = [];
+  const unusedDeps = dcaFindings.filter(
+    (f) => f.metadata?.kind === "dca" && f.metadata.subkind === "unused-dep"
+  );
+  const deadFiles = dcaFindings.filter(
+    (f) => f.metadata?.kind === "dca" && f.metadata.subkind === "dead-file"
+  );
+
+  lines.push(
+    `### 🧹 Dead code & unused dependencies (${dcaFindings.length})`,
+    "",
+    "_Deterministic scan: parsed manifests + walked imports to find code and packages that ship but aren't connected to anything. Severity is Low because dead code rarely breaks anything — but it expands attack surface for free._",
+    ""
+  );
+
+  if (unusedDeps.length > 0) {
+    // Group by ecosystem.
+    const byEco = new Map<string, Finding[]>();
+    for (const f of unusedDeps) {
+      const meta = f.metadata as Extract<FindingMetadata, { kind: "dca" }>;
+      const eco = meta.ecosystem ?? "unknown";
+      const arr = byEco.get(eco);
+      if (arr) arr.push(f);
+      else byEco.set(eco, [f]);
+    }
+    lines.push(
+      `<details${unusedDeps.length <= 8 ? " open" : ""}><summary><strong>Unused dependencies</strong> · ${unusedDeps.length}</summary>`,
+      "",
+      "| Ecosystem | Package | Manifest |",
+      "|---|---|---|"
+    );
+    const ecoOrder = [...byEco.keys()].sort();
+    for (const eco of ecoOrder) {
+      const items = byEco.get(eco)!;
+      for (const f of items.sort((a, b) => {
+        const an = (a.metadata as Extract<FindingMetadata, { kind: "dca" }>).packageName ?? "";
+        const bn = (b.metadata as Extract<FindingMetadata, { kind: "dca" }>).packageName ?? "";
+        return an.localeCompare(bn);
+      })) {
+        const meta = f.metadata as Extract<FindingMetadata, { kind: "dca" }>;
+        lines.push(`| \`${eco}\` | \`${meta.packageName ?? ""}\` | \`${meta.manifestPath ?? f.file}\` |`);
+      }
+    }
+    lines.push("", "**Suggested fix:** remove these from their manifests. They are not imported anywhere in the source tree.", "", "</details>", "");
+  }
+
+  if (deadFiles.length > 0) {
+    lines.push(
+      `<details${deadFiles.length <= 10 ? " open" : ""}><summary><strong>Dead files</strong> · ${deadFiles.length}</summary>`,
+      ""
+    );
+    const aggregate = deadFiles.find((f) => f.file === "");
+    if (aggregate) {
+      lines.push(
+        `> ${escapeMd(aggregate.title)}`,
+        "",
+        escapeMd(aggregate.risk),
+        "",
+        `**Suggested fix:** ${escapeMd(aggregate.fix)}`
+      );
+    } else {
+      lines.push("| File |", "|---|");
+      for (const f of deadFiles.sort((a, b) => a.file.localeCompare(b.file))) {
+        lines.push(`| \`${f.file}\` |`);
+      }
+      lines.push("", "**Suggested fix:** delete the file, or wire it up by importing it from where it should be used. Confidence is medium because dynamic imports and framework auto-discovery can produce false positives.");
+    }
+    lines.push("", "</details>", "");
+  }
+
+  return lines.join("\n");
 }
 
 function renderScaSection(scaFindings: Finding[]): string {

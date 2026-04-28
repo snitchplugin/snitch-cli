@@ -24,19 +24,28 @@ export interface Finding {
   metadata?: FindingMetadata;
 }
 
-export type FindingMetadata = {
-  kind: "sca";
-  ecosystem: string;
-  packageName: string;
-  packageVersion: string;
-  vulnId: string;
-  /** GHSA / NVD / advisory link, used as the canonical "learn more" URL. */
-  advisoryUrl?: string;
-  /** Human-readable summary line (one sentence, ~150 chars). */
-  summary: string;
-  /** Suggested upgrade target if known. */
-  fixedVersion?: string;
-};
+export type FindingMetadata =
+  | {
+      kind: "sca";
+      ecosystem: string;
+      packageName: string;
+      packageVersion: string;
+      vulnId: string;
+      /** GHSA / NVD / advisory link, used as the canonical "learn more" URL. */
+      advisoryUrl?: string;
+      /** Human-readable summary line (one sentence, ~150 chars). */
+      summary: string;
+      /** Suggested upgrade target if known. */
+      fixedVersion?: string;
+    }
+  | {
+      kind: "dca";
+      /** Distinguishes "unused dependency" from "dead file" within DCA. */
+      subkind: "unused-dep" | "dead-file";
+      ecosystem?: string;
+      packageName?: string;
+      manifestPath?: string;
+    };
 
 export interface AnalyzeArgs {
   apiKey: string;

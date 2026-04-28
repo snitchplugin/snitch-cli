@@ -13,6 +13,8 @@ const SCA_MANIFEST_FILENAMES = new Set([
   "requirements.txt", "poetry.lock", "Pipfile.lock", "uv.lock",
   "Cargo.lock", "go.sum", "go.mod", "Gemfile.lock",
   "composer.lock", "packages.lock.json", "gradle.lockfile", "pom.xml",
+  // Higher-level manifests for DCA's unused-dep analysis (only directs).
+  "package.json", "pyproject.toml", "Cargo.toml", "composer.json", "Gemfile",
 ]);
 
 function isScannablePath(p: string): boolean {
